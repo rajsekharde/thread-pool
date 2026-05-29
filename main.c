@@ -3,89 +3,53 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-void* action(void *args) {
-    int *a = (int*)args;
-    printf("Printing from thread: %d\n", *a);
-    sleep(2);
-    free(a);
-    pthread_exit(NULL);
-}
+typedef struct TaskNode {
+    void (*function)(void*);
+    void* arg;
+    struct TaskNode* next;
+} TaskNode;
 
-void singleThread() {
-    pthread_t myThread;
-    int *a = (int*)malloc(sizeof(int));
-    *a = 45;
-    pthread_create(&myThread, NULL, action, a);
-    pthread_join(myThread, NULL);
-    printf("Thread finished\n");
-}
-
-void sequentialExecution(int n)
+void pushTask(TaskNode** head, void (*func)(void*), void* arg)
 {
-    printf("Sequential Execution:\n");
-    for (int i = 0; i < n; i++)
-    {
-        sleep(2);
-    }
-}
-
-void multipleThreads(int n) {
-    printf("Mutithreaded Execution:\n");
-    pthread_t* threadArray = (pthread_t*)malloc(n * sizeof(pthread_t));
-    for(int i=0; i<n; i++) {
-        int *a = (int*)malloc(sizeof(int));
-        *a = i;
-        pthread_create(&threadArray[i], NULL, action, a);
-    }
-    for (int i = 0; i < n; i++) {
-        pthread_join(threadArray[i], NULL);
-    }
-    printf("Thread finished\n");
-    free(threadArray);
-}
-
-typedef struct Node {
-    int val;
-    struct Node* next;
-} Node;
-
-void push(Node** head, int value) {
-    Node* newNode = (Node*)malloc(sizeof(Node));
-    newNode->val = value;
+    TaskNode* newNode = (TaskNode *)malloc(sizeof(TaskNode));
+    newNode->function = func;
+    newNode->arg = arg;
     newNode->next = NULL;
-    if(!*head) {
+    if (!*head) {
         *head = newNode;
         return;
     }
-    Node* temp = *head;
-    while(temp->next != NULL) {temp = temp->next;}
+    TaskNode* temp = *head;
+    while (temp->next != NULL) {
+        temp = temp->next;
+    }
     temp->next = newNode;
 }
 
-void pop(Node** head) {
+void executeAndPopTask(TaskNode** head) {
     if(!*head) {return;}
-    Node *temp = *head;
+    TaskNode* temp = *head;
+    temp->function(temp->arg);
     *head = (*head)->next;
     free(temp);
 }
 
-void displayQueue(Node* head) {
-    if(!head) {return;}
-    while(head) {
-        printf("%d ", head->val);
-        head = head->next;
-    }
-    printf("\n");
+void printNumber(void* arg) {
+    int n = *(int*)arg;
+    printf("Number = %d\n", n);
 }
 
 int main() {
-    Node* head = NULL;
-    push(&head, 10);
-    push(&head, 20);
-    push(&head, 30);
-    displayQueue(head);
-    pop(&head);
-    printf("Front = %d\n", head->val);
-    displayQueue(head);
+    TaskNode* taskList = NULL;
+    int b = 100;
+    pushTask(&taskList, printNumber, &b);
+    int a[5] = {1, 2, 3, 4, 5};
+    for(int i=0; i<5; i++) {
+        pushTask(&taskList, printNumber, &a[i]);
+    }
+    executeAndPopTask(&taskList);
+    executeAndPopTask(&taskList);
+    executeAndPopTask(&taskList);
+    executeAndPopTask(&taskList);
     return 0;
 }

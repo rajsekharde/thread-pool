@@ -1,13 +1,12 @@
-Thread Pool implementation in C
+# Thread Pool implementation in C
 
-## Threads
+## Task queue creation
 
-A standard C program has exactly one thread- the main thread. Threads are created in C using pthreads (POSIX threads), standard on Unix-like systems.
+Task node struct:
+- Function pointer
+- Pointer to argument
+- Pointer to next node
 
-Threads inside a process share the same memory space:
-- Share: Code, global variables, static variables, file descriptors, and heap memory.
-- Keep private: Each thread gets its own Program Counter, registers, and a private Stack to store local variables and function call history.
-
-System resource usage:
-- Stack size: 8 MB for each thread in Linux.
-
+Queue functions:
+- Push a task (function, argument) to the end of queue
+- Execute and pop first task in queue
