@@ -2,7 +2,7 @@
 #define THREADPOOL_H
 
 #include "taskqueue.h"
-#include "pthread.h"
+#include <pthread.h>
 
 // Threadpool struct
 typedef struct Threadpool {
@@ -10,9 +10,11 @@ typedef struct Threadpool {
     int is_active;
     Task *task_queue;
     pthread_t* pool;
-    pthread_mutex_t* lock;
-    pthread_cond_t* signal;
+    pthread_mutex_t lock;
+    pthread_cond_t signal;
 } Threadpool;
 
+// Initialize threadpool
+Threadpool* initialize_threadpool(int num_threads);
 
 #endif THREADPOOL_H
