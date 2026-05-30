@@ -22,6 +22,18 @@ void push(Task** task_queue, void* (*function) (void*), void* arg) {
     temp->next = new_task;
 }
 
+// Pop task
+void pop(Task** task_queue) {
+    if(!*task_queue) {
+        printf("Empty queue\n");
+        return;
+    }
+
+    Task* temp = *task_queue;
+    *task_queue = (*task_queue)->next;
+    free(temp);
+}
+
 int main() {
     //
 }
