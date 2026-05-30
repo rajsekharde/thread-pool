@@ -33,7 +33,3 @@ void pop(Task** task_queue) {
     *task_queue = (*task_queue)->next;
     free(temp);
 }
-
-int main() {
-    //
-}
