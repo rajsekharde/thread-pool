@@ -17,4 +17,4 @@ typedef struct Threadpool {
 // Initialize threadpool
 Threadpool* initialize_threadpool(int num_threads);
 
-#endif THREADPOOL_H
+#endif

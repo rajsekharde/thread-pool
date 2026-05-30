@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "taskqueue.h"
 
@@ -11,6 +12,7 @@ void push(Task** task_queue, void* (*function) (void*), void* arg) {
     }
     new_task->function = function;
     new_task->arg = arg;
+    new_task->next = NULL;
     
     if(!*task_queue) {
         *task_queue = new_task;

@@ -14,4 +14,4 @@ void push(Task** task_queue, void* (*function) (void*), void* arg);
 // Remove first task in Queue
 void pop(Task** task_queue);
 
-#endif TASKQUEUE_H
+#endif

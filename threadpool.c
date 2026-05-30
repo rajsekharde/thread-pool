@@ -3,7 +3,7 @@
 
 #include "threadpool.h"
 
-// Task function
+// Thread function
 void* thread_function(void* arg) {
     Threadpool* t_pool = (Threadpool*)arg;
 
@@ -108,10 +108,17 @@ Threadpool* initialize_threadpool(int num_threads) {
             return NULL;
         }
     }
-
+    printf("Thread pool initialised. %d threads created\n", num_threads);
     return t_pool;
 }
 
 int main() {
-    //
+    Threadpool* t_pool = initialize_threadpool(10);
+
+    while(1) {
+        printf("Enter 1 to exit\n");
+        int n;
+        scanf("%d", &n);
+        if(n == 1) break;
+    }
 }
