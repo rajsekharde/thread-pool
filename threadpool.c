@@ -108,8 +108,34 @@ Threadpool* initialize_threadpool(int num_threads) {
             return NULL;
         }
     }
-    printf("Thread pool initialised. %d threads created\n", num_threads);
+    printf("Thread pool initialised & %d threads created\n", num_threads);
     return t_pool;
+}
+
+void destroy_threadpool(Threadpool* t_pool) {
+    pthread_mutex_lock(&t_pool->lock);
+    t_pool->is_active = 0;
+    pthread_mutex_unlock(&t_pool->lock);
+
+    pthread_cond_broadcast(&t_pool->signal);
+
+    for(int i=0; i<t_pool->num_threads; i++) {
+        pthread_join(t_pool->pool[i], NULL);
+    }
+
+    pthread_mutex_lock(&t_pool->lock);
+    while(t_pool->task_queue) {
+        pop(&t_pool->task_queue);
+    }
+    pthread_mutex_unlock(&t_pool->lock);
+
+    pthread_cond_destroy(&t_pool->signal);
+    pthread_mutex_destroy(&t_pool->lock);
+
+    free(t_pool->pool);
+    free(t_pool);
+
+    printf("Threadpool destroyed & memory freed\n");
 }
 
 int main() {
@@ -119,6 +145,10 @@ int main() {
         printf("Enter 1 to exit\n");
         int n;
         scanf("%d", &n);
-        if(n == 1) break;
+        if(n == 1) {
+            destroy_threadpool(t_pool);
+            break;
+        }
     }
+    return 0;
 }

@@ -17,4 +17,7 @@ typedef struct Threadpool {
 // Initialize threadpool
 Threadpool* initialize_threadpool(int num_threads);
 
+// Destroy threadpool
+void destroy_threadpool(Threadpool* t_pool);
+
 #endif
