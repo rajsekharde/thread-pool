@@ -8,4 +8,7 @@ typedef struct Task {
     struct Task* next;
 } Task;
 
+// Push task to Queue
+void push(Task** task_queue, void* (*function) (void*), void* arg);
+
 #endif TASKQUEUE_H
