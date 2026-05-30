@@ -31,7 +31,7 @@ void pop(Task** task_queue) {
         return;
     }
 
-    Task* temp = *task_queue;
+    // Task* temp = *task_queue;
+    // free(temp);
     *task_queue = (*task_queue)->next;
-    free(temp);
 }

@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #include "threadpool.h"
 
@@ -82,11 +83,6 @@ Threadpool* initialize_threadpool(int num_threads) {
     for (int i = 0; i < num_threads; i++)
     {
         if(pthread_create(&t_pool->pool[i], NULL, thread_function, (void*)t_pool) != 0) {
-            printf("Failed to create thread\n");
-            pthread_cond_destroy(&t_pool->signal);
-            pthread_mutex_destroy(&t_pool->lock);
-            free(t_pool);
-
             printf("Failed to create thread %d, shutting down pool initialization\n", i);
 
             // signal shutdown to running threads
@@ -112,17 +108,22 @@ Threadpool* initialize_threadpool(int num_threads) {
     return t_pool;
 }
 
+// destroy threadpool
 void destroy_threadpool(Threadpool* t_pool) {
+    // mark threadpool as inactive
     pthread_mutex_lock(&t_pool->lock);
     t_pool->is_active = 0;
     pthread_mutex_unlock(&t_pool->lock);
 
+    // wake up all the threads
     pthread_cond_broadcast(&t_pool->signal);
 
+    // join all the threads
     for(int i=0; i<t_pool->num_threads; i++) {
         pthread_join(t_pool->pool[i], NULL);
     }
 
+    // empty task queue
     pthread_mutex_lock(&t_pool->lock);
     while(t_pool->task_queue) {
         pop(&t_pool->task_queue);
@@ -138,9 +139,49 @@ void destroy_threadpool(Threadpool* t_pool) {
     printf("Threadpool destroyed & memory freed\n");
 }
 
+// Add task to queue
+void add_task(Threadpool* t_pool, void* (*task_function) (void*), void* arg) {
+    if(!t_pool) return;
+
+    pthread_mutex_lock(&t_pool->lock);
+
+    // push task struct to queue
+    push(&t_pool->task_queue, task_function, arg);
+    // wake up exactly one thread
+    pthread_cond_signal(&t_pool->signal);
+
+    pthread_mutex_unlock(&t_pool->lock);
+
+    printf("Task added to queue\n");
+}
+
+// Args struct
+typedef struct Args {
+    int val;
+} Args;
+
+// Dummy task function
+void* print_number(void* arg) {
+    Args* a = (Args*)arg;
+    
+    printf("Number = %d\n", a->val);
+    // fflush(stdout); // display output immediately
+
+    return NULL;
+}
+
 int main() {
     Threadpool* t_pool = initialize_threadpool(10);
+    if(!t_pool) {
+        printf("Failed to initialize threadpool\n");
+        return 1;
+    }
 
+    Args a = {45}, b = {100};
+    add_task(t_pool, print_number, &a);
+    add_task(t_pool, print_number, &b);
+
+    sleep(2); // main thread sleeps for 2 secs to let the threads execute tasks
     while(1) {
         printf("Enter 1 to exit\n");
         int n;

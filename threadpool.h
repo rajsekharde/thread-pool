@@ -20,4 +20,7 @@ Threadpool* initialize_threadpool(int num_threads);
 // Destroy threadpool
 void destroy_threadpool(Threadpool* t_pool);
 
+// Add task to queue
+void add_task(Threadpool* t_pool, void* (*task_function) (void*), void* arg);
+
 #endif
