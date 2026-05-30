@@ -36,7 +36,9 @@ void executeAndPopTask(TaskNode** head) {
 
 void printNumber(void* arg) {
     int n = *(int*)arg;
+    sleep(2); // sleep 2 seconds
     printf("Number = %d\n", n);
+    pthread_exit(NULL);
 }
 
 int main() {
@@ -47,9 +49,6 @@ int main() {
     for(int i=0; i<5; i++) {
         pushTask(&taskList, printNumber, &a[i]);
     }
-    executeAndPopTask(&taskList);
-    executeAndPopTask(&taskList);
-    executeAndPopTask(&taskList);
-    executeAndPopTask(&taskList);
+    
     return 0;
 }
