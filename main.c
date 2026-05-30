@@ -1,54 +1,46 @@
 #include <stdio.h>
-#include <pthread.h>
-#include <stdlib.h>
 #include <unistd.h>
 
-typedef struct TaskNode {
-    void (*function)(void*);
-    void* arg;
-    struct TaskNode* next;
-} TaskNode;
+#include "threadpool.h"
 
-void pushTask(TaskNode** head, void (*func)(void*), void* arg)
-{
-    TaskNode* newNode = (TaskNode *)malloc(sizeof(TaskNode));
-    newNode->function = func;
-    newNode->arg = arg;
-    newNode->next = NULL;
-    if (!*head) {
-        *head = newNode;
-        return;
-    }
-    TaskNode* temp = *head;
-    while (temp->next != NULL) {
-        temp = temp->next;
-    }
-    temp->next = newNode;
-}
+// Args struct
+typedef struct Args {
+    int val;
+} Args;
 
-void executeAndPopTask(TaskNode** head) {
-    if(!*head) {return;}
-    TaskNode* temp = *head;
-    temp->function(temp->arg);
-    *head = (*head)->next;
-    free(temp);
-}
+// Dummy task function
+void *print_number(void *arg) {
+    Args *a = (Args *)arg;
 
-void printNumber(void* arg) {
-    int n = *(int*)arg;
-    sleep(2); // sleep 2 seconds
-    printf("Number = %d\n", n);
-    pthread_exit(NULL);
+    printf("Number = %d\n", a->val);
+    // fflush(stdout); // display output immediately
+
+    return NULL;
 }
 
 int main() {
-    TaskNode* taskList = NULL;
-    int b = 100;
-    pushTask(&taskList, printNumber, &b);
-    int a[5] = {1, 2, 3, 4, 5};
-    for(int i=0; i<5; i++) {
-        pushTask(&taskList, printNumber, &a[i]);
+    Threadpool *t_pool = initialize_threadpool(10);
+    if (!t_pool)
+    {
+        printf("Failed to initialize threadpool\n");
+        return 1;
     }
-    
+
+    Args a = {45}, b = {100};
+    add_task(t_pool, print_number, &a);
+    add_task(t_pool, print_number, &b);
+
+    sleep(2); // main thread sleeps for 2 secs to let the threads execute tasks
+    while (1)
+    {
+        printf("Enter 1 to exit\n");
+        int n;
+        scanf("%d", &n);
+        if (n == 1)
+        {
+            destroy_threadpool(t_pool);
+            break;
+        }
+    }
     return 0;
 }
