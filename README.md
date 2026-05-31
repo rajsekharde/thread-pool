@@ -78,3 +78,22 @@ void add_task(threadpool, function, arg) {
     unlock mutex
 }
 ```
+
+## Optimizations
+
+The push() function for task queue taks O(n) time. By storing the pointer to last task node, tasks can be added in O(1) time.
+
+## Project structure
+
+- threadpool.c : threadpool source code
+- taskqueue.c : task queue implementation
+- main.c : import & test threadpool
+- *.h : header files
+- *.md : documentation/notes
+
+## Running the program
+
+```bash
+gcc main.c threadpool.c taskqueue.c
+./a.out
+```
